@@ -1,14 +1,15 @@
 class Api::V1::PostsController < ApplicationController
     def index
         posts=Post.all
-        render json: posts
+        render json: posts, each_serializer: PostSerializer
+
     end
 
     def create
         post=Post.new(post_params)
 
         if post.save
-            render json: post, status: 200
+            render json: post, serializer: PostSerializer
         else
             render json:{
                 error:"An error has occurred"
@@ -19,7 +20,7 @@ class Api::V1::PostsController < ApplicationController
     def update
         post = Post.find_by(id: params[:id])
         if post.update(post_params)
-            render json: post
+            render json: post, serializer: PostSerializer
         else
             render json: { errors: post.errors.messages }, status: 422
         end
@@ -37,7 +38,7 @@ class Api::V1::PostsController < ApplicationController
     def show
         post=Post.find_by(id: params[:id])
         if post
-            render json: post
+            render json: post, serializer: PostSerializer
         else
             render json:{
                 error: "Post not found"
