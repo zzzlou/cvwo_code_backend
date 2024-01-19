@@ -26,10 +26,14 @@ class Api::V1::PostsController < ApplicationController
     end
 
     def destroy
-        if @post.destroy
-            render json: { message: "Post Deleted" }
+        if @post.user == current_user || current_user.username == "admin"
+            if @post.destroy
+                render json: { message: "Post Deleted" }
+            else
+                render json: { errors: @post.errors.messages }, status: :unprocessable_entity
+            end
         else
-            render json: { errors: @post.errors.messages }, status: :unprocessable_entity
+            render json: { error: "Not Authorized" }, status: :unauthorized
         end
     end
 
