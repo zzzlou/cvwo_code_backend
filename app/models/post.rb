@@ -1,9 +1,10 @@
 class Post < ApplicationRecord
-    has_many :comments, dependent: :destroy
+  belongs_to :user 
+  has_many :comments, dependent: :destroy
   
-    def comment_num
-      comments.count
-    end
+  def comment_num
+    comments.count
+  end
 end
-  
+
   

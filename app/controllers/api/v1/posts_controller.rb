@@ -1,54 +1,58 @@
 class Api::V1::PostsController < ApplicationController
-    def index
-        posts=Post.all
-        render json: posts, each_serializer: PostSerializer
+    before_action :set_post, only: [:update, :destroy, :show]
+    before_action :authenticate_user, only: [:create, :update, :destroy]
 
+    def index
+        posts = Post.all
+        render json: posts, each_serializer: PostSerializer
     end
 
     def create
-        post=Post.new(post_params)
+        post = current_user.posts.new(post_params)
 
         if post.save
             render json: post, serializer: PostSerializer
         else
-            render json:{
-                error:"An error has occurred"
-            }
+            render json: { errors: @post.errors.messages }, status: :unprocessable_entity
         end
     end
 
     def update
-        post = Post.find_by(id: params[:id])
-        if post.update(post_params)
-            render json: post, serializer: PostSerializer
+        if @post.update(post_params)
+            render json: @post, serializer: PostSerializer
         else
-            render json: { errors: post.errors.messages }, status: 422
+            render json: { errors: @post.errors.messages }, status: :unprocessable_entity
         end
     end
 
     def destroy
-        post = Post.find_by(id: params[:id])
-        if post.destroy
-            render json: "Post Deleted"
+        if @post.destroy
+            render json: { message: "Post Deleted" }
         else
-            render json: { errors: post.errors.messages }, status: 422
+            render json: { errors: @post.errors.messages }, status: :unprocessable_entity
         end
     end
 
     def show
-        post=Post.find_by(id: params[:id])
-        if post
-            render json: post, serializer: PostSerializer
-        else
-            render json:{
-                error: "Post not found"
-            }
-        end
+        render json: @post, serializer: PostSerializer
     end
 
     private
+    def current_user
+        @current_user ||= User.find(session[:user_id]) if session[:user_id]
+    end
+
+    def set_post
+        @post = Post.find_by(id: params[:id])
+        render json: { error: "Post not found" } unless @post
+    end
+
+    def authenticate_user
+        
+        render json: { error: 'Not Authorized' }, status: :unauthorized unless current_user
+    end
 
     def post_params
-        params.require(:post).permit(:title,:details,:category,:likes,:name)
+        params.require(:post).permit(:title, :details, :category, :likes, :name)
     end
 end

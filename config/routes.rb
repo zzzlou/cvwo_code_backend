@@ -4,6 +4,10 @@ Rails.application.routes.draw do
       resources :posts do
         resources :comments
       end
+
+      resources :users
+      post '/login', to: 'sessions#create'
+      delete '/logout', to: 'sessions#destroy'
     end
   end
 end
