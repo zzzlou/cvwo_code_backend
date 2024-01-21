@@ -3,9 +3,13 @@ class Api::V1::PostsController < ApplicationController
     before_action :authenticate_user, only: [:create, :update, :destroy]
 
     def index
-        posts = Post.all
+        if params[:category]
+          posts = Post.where(category: params[:category])
+        else
+          posts = Post.all
+        end
         render json: posts, each_serializer: PostSerializer
-    end
+      end
 
     def create
         post = current_user.posts.new(post_params)
